@@ -93,7 +93,3 @@ int main() {
 	free(persons);
 	return 0;
 }
-	} while (code != 0);
-	free(persons);
-
-}
