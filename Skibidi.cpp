@@ -18,15 +18,16 @@ void hello() {
 	printf("2. Вывод таблицы\n");
 	printf("3. Поиск человека\n");
 	printf("4. Добавить человека\n");
-	printf("5. Сохранение\n");
-	printf("6. Удаление\n");
+	printf("5. Удаление\n");
+	printf("6. Сохранение\n");
 	printf("Ваш выбор: ");
 }
 
 struct Person* read(int* size, const char* fname) {
 	FILE* f = fopen(fname, "r");
 	fscanf_s(f, "%d", size);
-	struct Person* res = (struct Person*)malloc(sizeof(struct Person) * (*size));
+	if ((size) > 15) return;
+	struct Person* res = (struct Person*)malloc(sizeof(struct Person) * 15);
 	if (res == NULL) {
 		return NULL;
 	}
@@ -40,8 +41,8 @@ struct Person* read(int* size, const char* fname) {
 	return res;
 }
 
-void tabs(struct Person* persons, int size, int s) {
-	for (int i = 0; i < (size - 3 + s) ; i++) {
+void tabs(struct Person* persons, int size) {
+	for (int i = 0; i < size; i++) {
 		printf("--------------------\n");
 		printf("Человек %d\n", i + 1);
 		printf("Фамилия: %s\n", persons[i].surname);
@@ -62,19 +63,19 @@ int search(struct Person* persons, int size, char* str) {
 	return res;
 }
 
-void add(struct Person* persons, int size, int* s) {
+void add(struct Person* persons, int* size) {
 	while (getchar() != '\n');
 	printf("Введите фамилию: ");
-	fgets(persons[10 + (*s)].surname, sizeof(persons[10 + (*s)].surname), stdin);
-	persons[10 + (*s)].surname[strcspn(persons[10 + (*s)].surname, "\n")] = '\0';
+	fgets(persons[*size].surname, sizeof(persons[*size].surname), stdin);
+	persons[*size].surname[strcspn(persons[*size].surname, "\n")] = '\0';
 	printf("Введите имя: ");
-	fgets(persons[10 + (*s)].name, sizeof(persons[10 + (*s)].name), stdin);
-	persons[10 + (*s)].name[strcspn(persons[10 + (*s)].name, "\n")] = '\0';
+	fgets(persons[*size].name, sizeof(persons[*size].name), stdin);
+	persons[*size].name[strcspn(persons[*size].name, "\n")] = '\0';
 	printf("Введите возраст: ");
-	scanf_s("%d", &(persons[10 + (*s)].age));
+	scanf_s("%d", &(persons[*size].age));
 	printf("Введите год рождения: ");
-	scanf_s("%d", &(persons[10 + (*s)].year));
-	(*s)++;
+	scanf_s("%d", &(persons[*size].year));
+	(*size)++;
 }
 
 void save(struct Person* persons, int size, const char* fname) {
@@ -91,23 +92,23 @@ void save(struct Person* persons, int size, const char* fname) {
 	fclose(f);
 }
 
-void delete(struct Person* persons, int size, char* fam, int*s) {
+void delete(struct Person* persons, int* size, char* fam) {
 	int j = 0;
-	for (int i = 0; i < size; i++) {
+	for (int i = 0; i < (*size); i++) {
 		if (strcmp(persons[i].surname, fam) == 0) {
 			j = i;
 		}
 	}
-	for (int i = j; i < size - 1; i++) {
+	for (int i = j; i < (*size) - 1; i++) {
 		persons[i] = persons[i + 1];
 	}
-	(*s)--;
+	(*size)--;
 }
 
 int main() {
 	SetConsoleCP(1251); SetConsoleOutputCP(1251);
 	setlocale(LC_CTYPE, "Rus");
-	int code, turn, size, res, s = 0, flag = 0;
+	int code, turn, size, res, flag = 0;
 	char str[20];
 	char fam[20];
 	struct Person* persons = NULL;
@@ -119,12 +120,13 @@ int main() {
 		case 1:
 			flag = 1;
 			persons = read(&size, "D:\\prog\\Persons.txt");
-			tabs(persons, size, s);
+			if (size > 15) { printf("В файле может быть только 15 человек"); return 0; }
+			tabs(persons, size);
 			break;
 
 		case 2:
 			if (flag == 0) { printf("Сначала необходимо загрузить файл\n"); break; }
-			tabs(persons, size, s);
+			tabs(persons, size);
 			break;
 
 		case 3:
@@ -140,25 +142,25 @@ int main() {
 
 		case 4: 
 			if (flag == 0) { printf("Сначала необходимо загрузить файл\n"); break; }
-			if (s == 3) { printf("Больше нельзя добавить людей\n"); break; }
-			add(persons, size, &s);
-			tabs(persons, size, s);
+			if (size == 15) { printf("Больше нельзя добавить людей\n"); break; }
+			add(persons, &size);
+			tabs(persons, size);
 			break;
 
-		case 5: 
+		case 5:
 			if (flag == 0) { printf("Сначала необходимо загрузить файл\n"); break; }
-			save(persons, size, "D:\\prog\\Persons.txt");
-			break;
-
-		case 6:
-			if (flag == 0) { printf("Сначала необходимо загрузить файл\n"); break; }
-			if (s == -9) { printf("Больше людей нельзя удалить\n"); break; }
+			if (size == 0) { printf("Больше людей нельзя удалить\n"); break; }
 			printf("Введите фамилию человека, которого хотите удалить из списка: ");
 			while (getchar() != '\n');
 			fgets(fam, sizeof(fam), stdin);
 			fam[strcspn(fam, "\n")] = '\0';
-			delete(persons, size, fam, &s);
-			tabs(persons, size, s);
+			delete(persons, &size, fam);
+			tabs(persons, size);
+			break;
+
+		case 6:
+			if (flag == 0) { printf("Сначала необходимо загрузить файл\n"); break; }
+			save(persons, size, "D:\\prog\\Persons.txt");
 			break;
 
 		default:
